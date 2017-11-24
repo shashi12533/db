@@ -172,19 +172,25 @@ class SimplifiedArgs(RequestArgs):
 
 class DescriptionArgs:
     @staticmethod
+    def validate_head_xor_unit_exists(head, unit):
+        load = {'head': head, 'unit': unit}
+        if head and unit:
+            raise ArgError('Error: both head and unit parameters given, please give one!', load)
+        if not (head and unit):
+            raise ArgError('Error: both or head parameters should be given', load)
+
+    @staticmethod
     def get_and_delete_params():
+        # params should be like 'head=GDP' or 'unit=rog'
         head = flask.request.args.get('head')
         unit = flask.request.args.get('unit')
-        if head and unit:
-            raise ArgError('Argument error: both head and unit parameters given, please give one!')
-        if not (head and unit):
-            raise ArgError('Argument error: both or head parameters should be given')
+        DescriptionArgs.validate_head_xor_unit_exists(head, unit)
         type = name = None
         if head:
             type = 'head'
             name = head
         if unit:
-            type = unit
+            type = 'unit'
             name = unit
         return {
             'type': type,
@@ -193,7 +199,33 @@ class DescriptionArgs:
 
     @staticmethod
     def post_params():
-        pass
+        """
+        Payload should be like
+        [dict(head='BRENT', ru='Цена нефти Brent', en='Brent oil price'),
+        dict(head='GDP', ru='Валовый внутренний продукт', en='Gross domestic product'),
+        dict(unit='rog', ru='темп роста к пред. периоду', en='rate of growth to previous period'),
+        dict(unit='yoy', ru='темп роста за 12 месяцев', en='year-on-year rate of growth')]
+        """
+        descriptions = flask.request.json
+        if len(descriptions) == 0:
+            raise ArgError('Error: no data given', descriptions)
+        for description in descriptions:
+            head = description.get('head')
+            unit = description.get('unit')
+            DescriptionArgs.validate_head_xor_unit_exists(head, unit)
+            ru = description.get('ru')
+            en = description.get('en')
+            if not (ru or en):
+                raise ArgError("Error: 'ru' or 'en' keys (or both) required", description)
+            if head:
+                description['type'] = 'head'
+                description['name'] = head
+            if unit:
+                description['type'] = 'unit'
+                description['name'] = unit
+            description.pop('head', None)
+            description.pop('unit', None)
+        return descriptions
 
 
 if __name__ == "__main__":  # pragma: no cover

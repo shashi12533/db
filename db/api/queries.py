@@ -166,14 +166,31 @@ class DescriptionOperations:
     @staticmethod
     def get_one(type, name):
         description = Description.query.filter_by(type=type, name=name).first()
+        if not description:
+            raise CustomError400(f"Error: here's no description for type {repr(type)} and name {repr(name)}.")
         return description
 
     @staticmethod
-    def remove(type, name):
+    def add_descriptions(descriptions):
+        for dict in descriptions:
+            type = dict['type']
+            name = dict['name']
+            description_already_exists = DescriptionOperations.get_one(type, name)
+            if description_already_exists:
+                raise CustomError400(f"Error: Description with type {repr(type)} and name {repr(name)} "
+                                      "already exists.")
+            ru = dict.get('ru')
+            en = dict.get('en')
+            description = Description(type, name, ru, en)
+            db.session.add(description)
+        db.session.commit()
+
+    @staticmethod
+    def remove_one(type, name):
         description = Description.get_one(type, name)
         if not description:
             raise CustomError400( "Error: description can't be deleted,"
-                                 f"there's no such one with type {repr(type)} and name {repr(name)}.")
+                                 f"there's no such one for type {repr(type)} and name {repr(name)}.")
         try:
             db.session.delete(description)
             db.session.commit()

@@ -230,11 +230,13 @@ class DescriptionAPI(MethodView):
         return jsonify(DescriptionOperations.get_one(**args))
 
     def post(self):
-        pass
+        descriptions = DescriptionArgs.post_params()
+        DescriptionOperations.add_descriptions(descriptions)
+        return jsonify('Descriptions succesfully added')
 
     def delete(self):
         args = DescriptionArgs.get_and_delete_params()
-        DescriptionOperations.remove(**args)
+        DescriptionOperations.remove_one(**args)
         return jsonify('Successfully deleted')
 
 
