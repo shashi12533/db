@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from db.api.models import Datapoint
+from db.api.models import Datapoint, Description
 from db import db
-
+from db.api.errors import CustomError400
 
 # TODO: duplicate of util.py fucntion
 def to_date(date_str: str):
@@ -160,6 +160,27 @@ def get_boundary_date(freq, name, direction):
         .order_by(sorter) \
         .first()
     return date_as_str(dt.date)
+
+
+class DescriptionOperations:
+    @staticmethod
+    def get_one(type, name):
+        description = Description.query.filter_by(type=type, name=name).first()
+        return description
+
+    @staticmethod
+    def remove(type, name):
+        description = Description.get_one(type, name)
+        if not description:
+            raise CustomError400( "Error: description can't be deleted,"
+                                 f"there's no such one with type {repr(type)} and name {repr(name)}.")
+        try:
+            db.session.delete(description)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise CustomError400("Error on deleting")
+
 
 
 # 'pragma: no cover' exludes code block from coverage

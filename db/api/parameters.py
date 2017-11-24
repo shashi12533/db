@@ -170,6 +170,32 @@ class SimplifiedArgs(RequestArgs):
     query_keys = ['name', 'freq', 'start_date', 'end_date']
 
 
+class DescriptionArgs:
+    @staticmethod
+    def get_and_delete_params():
+        head = flask.request.args.get('head')
+        unit = flask.request.args.get('unit')
+        if head and unit:
+            raise ArgError('Argument error: both head and unit parameters given, please give one!')
+        if not (head and unit):
+            raise ArgError('Argument error: both or head parameters should be given')
+        type = name = None
+        if head:
+            type = 'head'
+            name = head
+        if unit:
+            type = unit
+            name = unit
+        return {
+            'type': type,
+            'name': name
+        }
+
+    @staticmethod
+    def post_params():
+        pass
+
+
 if __name__ == "__main__":  # pragma: no cover
 
     msg_str = 'Start date cannot be in future'

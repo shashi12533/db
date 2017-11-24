@@ -32,6 +32,10 @@ class Datapoint(db.Model):
 
 
 class Description(db.Model):
+    __table_args__ = (
+        db.UniqueConstraint('type', 'name'),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String, nullable=False) # either 'head' or 'unit'
     name = db.Column(db.String, nullable=False)

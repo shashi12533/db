@@ -5,8 +5,8 @@ from flask.views import MethodView
 
 from db import db
 from db.api.errors import CustomError400
-from db.api.queries import All, Allowed, DatapointOperations, DateRange
-from db.api.parameters import RequestArgs, RequestFrameArgs, SimplifiedArgs
+from db.api.queries import All, Allowed, DatapointOperations, DateRange, DescriptionOperations
+from db.api.parameters import RequestArgs, RequestFrameArgs, SimplifiedArgs, DescriptionArgs
 
 import db.api.utils as utils
 import db.helper.label as label
@@ -222,3 +222,21 @@ def variable_info():
 # TODO:
     # POST varname
     # POST unit
+
+class DescriptionAPI(MethodView):
+    def get(self):
+        # GET params should have 'head' xor 'unit' parameter
+        args = DescriptionArgs.get_and_delete_params()
+        return jsonify(DescriptionOperations.get_one(**args))
+
+    def post(self):
+        pass
+
+    def delete(self):
+        args = DescriptionArgs.get_and_delete_params()
+        DescriptionOperations.remove(**args)
+        return jsonify('Successfully deleted')
+
+
+
+api_bp.add_url_rule('/desc', view_func=DescriptionAPI.as_view('description_view'))
