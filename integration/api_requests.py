@@ -22,9 +22,16 @@ querieng all of the database.
 Note here we test GET methods only, not POST or DELETE.
 
 """
-
 import access
-import random 
+import random
+import datetime
+def valid_date(datestring):
+    try:
+        datetime.datetime.strptime(datestring, '%Y-%m-%d')
+        return True
+    except ValueError:
+        return False
+
 
 #  'api/freq' returns {'a', 'q', 'm', 'd'} frequencies 
 frequencies = ['a', 'q', 'm', 'd']
@@ -33,22 +40,28 @@ assert set(access.get_freq()) == set(frequencies)
 # 'api/names'
 freq = random.choice(frequencies)     
 names = access.get_names(freq)
-name = random.choice(names)  
-assert isinstance(name, str)
+filtered_names = [name for name in names if name[0].isupper()]
+name = random.choice(filtered_names)
+assert isinstance(name, basestring)
+# assert would have failed if name could not have converted from unicode to string
+# another fix is to assert isinstance(name,basestring)
 # TODO: 'name' starts with a capital letter
 
 # 'api/info'
 info = access.get_info(freq, name)
+import pdb
+pdb.set_trace()
 start_date = info[freq]['start_date']
 latest_date = info[freq]['latest_date']
 # WONTFIX: access.get_info(freq, name) should retrun a more flat data structure
 # TODO: check start_date and latest_date are ISO dates
 # TODO: more checks for info 
-
+assert valid_date(start_date)
+assert valid_date(latest_date)
 # 'api/datapoints'
 params = dict(freq=freq, name=name, start_date=start_date, end_date=latest_date) 
 ts = access.get_ts(**params)
-# FIXME: any cheks here?
+# FIXME: any checks here?
 
 #  'api/frame' 
 freq = 'a'     
@@ -65,10 +78,16 @@ series_list = [access.get_ts(freq=freq, name=name) for name in names]
 df2 = access.join_df([ts.to_frame() for ts in series_list])
 assert all(df1 == df2)
 
-# TODO: pick 3 random names from names, get result from api/frame, 
+# TODO: pick 3 random names from names, get result from api/frame,
+# picked three random names from names using random.sample
+# could not tested as i have installed python 2.7 so  super syntax support chnages for python 3
+random_names = random.sample(names,3)
+
 #       get result from api/datapoints, concat ts, compare.
 #       can use access2.py for this 
-    
+# from access2 import Frame
+# frame_obj= Frame(freg,names)
+# using this above code you will get results as needed
 
 # custom api 
 # WONTFIX: will also need domain 
