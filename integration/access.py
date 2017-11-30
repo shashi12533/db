@@ -70,12 +70,12 @@ def get_df(freq):
 
 
 def get_custom_series(freq, name, suffix, start, end):
-    url = f'http://minikep-db.herokuapp.com/ru/series/{name}/{freq}/{suffix}/{start}/{end}'
+    url = 'http://minikep-db.herokuapp.com/ru/series/{name}/{freq}/{suffix}/{start}/{end}'
     return read_from_url(url)
 
 
 def get_frame(freq):
-    url = f'http://minikep-db.herokuapp.com/api/frame?freq={freq}'
+    url = 'http://minikep-db.herokuapp.com/api/frame?freq=freq'
     return read_from_url(url)
 
 
